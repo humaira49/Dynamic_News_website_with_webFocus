@@ -1,0 +1,111 @@
+-DEFAULT &TAG ='REPORT';
+-DEFAULT &RELOAD = 'N';
+-DEFAULT &ID = ;
+-GOTO &TAG;
+-REPORT
+DEFINE FILE ADMIN
+ALPHA_ID/A9 = EDIT(ID);
+ALPHA_ID2/A9 = TRIM_(LEADING, '0', ALPHA_ID);
+EDIT_/A2000 ='<button onclick="editfuncA('||ALPHA_ID2||');"  style="background-color: #4CAF50; border: none;color: white;padding: 10px 20px;text-align: center; text-decoration: none; display: inline-block;font-size: 18px; margin: 4px 2px;cursor: pointer;border-radius: 5px;">Edit</button> '; 
+DELETE_/A300 ='<button onclick="deletefuncA('||ALPHA_ID2||');"  style="background-color: #f44336;border: none;color: white; padding: 10px 20px;text-align: center;text-decoration: none;display: inline-block; font-size: 18px; margin: 4px 2px;cursor: pointer;border-radius: 5px;">Delete</button>'; 
+END
+TABLE FILE ADMIN
+PRINT ID AS ID AND USERNAME AS Username AND PASSWORD AS Password AND EDIT_ AS Edit AND DELETE_ AS Delete
+ON TABLE HOLD AS ADMIN_TABLE FORMAT HTMTABLE
+ON  TABLE SET ASNAMES ON
+ON TABLE SET HTMLCSS ON
+ON TABLE SET STYLE *
+ TYPE=REPORT, FONT='Comic Sans MS', SIZE=14, SQUEEZE=ON,JUSTIFY=CENTER, COLOR=BLACK,
+  BORDER-TOP = HEAVY, BORDER-BOTTOM = HEAVY,  BORDER-LEFT = HEAVY, BORDER-RIGHT = HEAVY,$
+ TYPE=TITLE, STYLE=BOLD , SIZE=18,$ 
+ENDSTYLE
+END
+-RUN
+-IF &RELOAD NE 'Y' THEN GOTO HTMFORM;
+-HTMLFORM BEGIN
+ !IBI.FIL.ADMIN_TABLE;
+-HTMLFORM END 
+-HTMFORM
+
+-*________________________________________________DELETE________________________________
+-DELETERECORD
+MODIFY FILE ADMIN
+ FREEFORM ID
+ MATCH ID
+ ON MATCH DELETE
+ ON NOMATCH GOTO TOP
+ DATA 
+ &ID.EVAL
+END
+-RUN
+-GOTO FILE_END;
+-*_____________________________________Insert__________________________________ 
+-ADD_RECORD_A
+TABLE FILE ADMIN 
+SUM MAX.ID
+ON TABLE SAVE
+END
+-RUN
+-READ SAVE, &MAX_ID.I9.
+-RUN
+-SET &MAX_ID = &MAX_ID + 1;
+-RUN
+SQL
+INSERT INTO ADMIN (ID,USERNAME, PASSWORD)
+VALUES (&MAX_ID, '&USERNAME.EVAL', '&PASSWORD.EVAL');
+-RUN
+-GOTO FILE_END;
+
+
+-*_________________________________EDIT_______________________________________
+-EDITRECORD_A
+TABLE FILE ADMIN
+ PRINT ID USERNAME PASSWORD
+ WHERE ID EQ &ID.EVAL
+ ON TABLE HOLD AS EDIT_TABLE_A FORMAT ALPHA
+END
+-RUN
+-SET &ID = ;
+-SET &USERNAME = ;
+-SET &PASSWORD = ;
+-READFILE EDIT_TABLE_A
+-DEFAULT &ID  = ;
+-DEFAULT &USERNAME  = '';
+-DEFAULT &PASSWORD = '';
+-RUN
+-CLOSE EDIT_TABLE_A
+-*______________________________________modal for edit____________________________________________
+-HTMLFORM BEGIN
+ <div class="modal-header">
+    <h4 class="modal-title">Edit this record:</h4>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<!-- Modal body -->
+<div class="modal-body">
+    <form>
+     <input type="hidden" id="id_a" value="!IBI.AMP.ID;" class="mt-3" style="width: 100%;" /><br>
+        <strong>Username</strong><br>
+        <input type="text" id="user_name" value="!IBI.AMP.USERNAME;" class="mt-3" style="width: 100%;" /><br><br>
+        <strong>Password</strong><br>
+        <input type="text" id="pass_word" value="!IBI.AMP.PASSWORD;" class="mt-3" style="width: 100%;" /><br><br>  
+        <span onclick="EDIT_A();" class="mt-4 btn" style="cursor: pointer; background-color: green; color: white; font-weight: bold; padding: 8px;">Update</span><br>
+    </form>
+</div>
+<!-- Modal footer -->
+<div class="modal-footer">
+    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+</div>
+-HTMLFORM END
+-GOTO FILE_END;
+-*_________________________________Edit_________________________________________
+-EDIT_RECORD_A
+MODIFY FILE ADMIN
+ FREEFORM ID USERNAME PASSWORD
+ MATCH ID
+ ON MATCH UPDATE USERNAME PASSWORD
+ ON NOMATCH GOTO TOP
+ DATA 
+ &ID.EVAL , '&USERNAME.EVAL','&PASSWORD.EVAL',$
+END
+-RUN
+-FILE_END

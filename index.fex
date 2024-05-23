@@ -1,0 +1,74 @@
+-*___________________________________FOR ID TO START FROM LAST ID_________________________
+TABLE FILE NEWS
+SUM CNT.ID AS MAXID
+ON TABLE SET ASNAMES ON
+ON TABLE SAVE 
+END
+-RUN
+-READ SAVE , &MAXID.I9. 
+-RUN 
+-*________________________TO NOT SHOW MISSING IDs____________________________________________
+DEFINE FILE NEWS 
+NEWID/I9 = NEWID+1;
+END
+TABLE FILE NEWS 
+PRINT NEWID  ID NEWS_TITLE	NEWS	COUNTRY	NEWS_DATE	NEWS_TYPE	NEWS_IMAGE
+ON TABLE HOLD AS NEWS_HOLD FORMAT ALPHA 
+END
+-RUN
+-*______________________________________FOR LOOP________________________________________________
+-SET &LOOPNUM=1;
+-REPEAT MYLOOP 15 TIMES
+-*_______________________________________NEWS_DATE_FORMAT____________________________________
+DEFINE FILE NEWS_HOLD
+NEWS_DATE_Y/YY = NEWS_DATE;
+NEWS_DATE_M/M = NEWS_DATE;
+NEWS_DATE_D/D = NEWS_DATE;
+NEWS_DATE_Y2/A10 =EDIT( NEWS_DATE_Y);
+NEWS_DATE_M2/A10 =EDIT( NEWS_DATE_M);
+NEWS_DATE_D2/A10 =EDIT( NEWS_DATE_D);
+NEWS_DATE_F/A50= NEWS_DATE_Y2 | '- ' | NEWS_DATE_M2 |'- '| NEWS_DATE_D2;
+NEW_ID/I9 = &MAXID.EVAL - &LOOPNUM.EVAL+1;  
+END
+-*______________________________________TABLE FILE_________________________________________
+TABLE FILE NEWS_HOLD
+PRINT NEWID  AS ID&LOOPNUM.EVAL NEWS_TITLE AS NEWS_TITLE&LOOPNUM.EVAL  
+NEWS_DATE_F AS NEWS_DATE_F&LOOPNUM.EVAL
+ NEWS_IMAGE AS NEWS_IMAGE&LOOPNUM.EVAL 
+WHERE NEWID EQ NEW_ID 
+ON TABLE SET ASNAMES ON
+ON TABLE HOLD AS NEWSTITLE FORMAT ALPHA
+END
+-RUN
+-* -QUIT
+-*____________________________________READ__________________________________________
+-SET &NEWID&LOOPNUM.EVAL = ;
+-SET &NEWS_TITLE&LOOPNUM.EVAL = ;
+-SET &NEWS_DATE_F&LOOPNUM.EVAL= ;
+-SET &NEWS_IMAGE&LOOPNUM.EVAL = ;
+-READFILE NEWSTITLE
+-DEFAULT  &NEWID&LOOPNUM.EVAL= ;
+-DEFAULT &NEWS_TITLE&LOOPNUM.EVAL  ='';
+-DEFAULT &NEWS_DATE_F&LOOPNUM.EVAL='';
+-DEFAULT &NEWS_IMAGE&LOOPNUM.EVAL  ='';
+-RUN
+-CLOSE NEWSTITLE
+-SET &LOOPNUM=&LOOPNUM+1;
+-MYLOOP
+-*________________________________________HTML FILE INCLUDED_________________________________
+-HTMLFORM BEGIN
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+  var gc_RpcType = "!IBI.GLB.RPCTYPE;";
+  var sHomePath = "!IBI.GLB.HOMEPATH;";
+</script>
+</head>
+    <body>
+   !IBI.FIL.index.html; 
+</body>
+</html>
+-HTMLFORM END
+
+

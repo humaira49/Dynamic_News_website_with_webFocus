@@ -1,0 +1,152 @@
+-DEFAULT &TAG ='REPORT';
+-DEFAULT &ID = ;
+-DEFAULT &RELOAD = 'N';
+-GOTO &TAG;
+-REPORT
+DEFINE FILE NEWS
+ALPHA_ID/A9 = EDIT(ID);
+ALPHA_ID2/A9 = TRIM_(LEADING, '0', ALPHA_ID);
+EDIT_/A2000 ='<button onclick="editfunc('||ALPHA_ID2||');"  style="background-color: #4CAF50; border: none;color: white;padding: 10px 20px;text-align: center; text-decoration: none; display: inline-block;font-size: 18px; margin: 4px 2px;cursor: pointer;border-radius: 5px;">Edit</button> '; 
+DELETE_/A300 ='<button onclick="deletefunc('||ALPHA_ID2||');"  style="background-color: #f44336;border: none;color: white; padding: 10px 20px;text-align: center;text-decoration: none;display: inline-block; font-size: 18px; margin: 4px 2px;cursor: pointer;border-radius: 5px;">Delete</button>'; 
+END
+TABLE FILE NEWS
+PRINT ID AS Id AND NEWS_TITLE AS 'News title' AND NEWS AS 'News description' AND COUNTRY AS Country AND
+NEWS_DATE AS  Date AND NEWS_TYPE AS Type AND NEWS_IMAGE AS Image AND EDIT_ AS Edit AND DELETE_ AS Delete 
+ON TABLE HOLD AS NEWS_TABLE FORMAT HTMTABLE
+ON TABLE SET ASNAMES ON 
+ON TABLE SET HTMLCSS ON
+ON TABLE SET STYLE *
+TYPE=DATA, COLUMN=NEWS_TYPE, COLOR=RED, WHEN=NEWS_TYPE EQ 'A' ,$ 
+TYPE=DATA, COLUMN=NEWS_TYPE, COLOR=BLUE, WHEN=NEWS_TYPE EQ 'W' ,$ 
+TYPE=DATA, COLUMN=NEWS_TYPE, COLOR=PURPLE, WHEN=NEWS_TYPE EQ 'S',$ 
+ TYPE=REPORT,  FONT='Comic Sans MS', SIZE=14, SQUEEZE=ON,JUSTIFY=CENTER, COLOR=BLACK,
+ BORDER-TOP = HEAVY, BORDER-BOTTOM = HEAVY,  BORDER-LEFT = HEAVY, BORDER-RIGHT = HEAVY,$
+ TYPE=TITLE, STYLE=BOLD , SIZE=18,$ 
+ENDSTYLE
+END
+-RUN
+-* THIS IS FOR RELOAD_______________________
+-IF &RELOAD NE 'Y' THEN GOTO HTMFORM;
+-HTMLFORM BEGIN
+ !IBI.FIL.NEWS_TABLE;
+-HTMLFORM END
+-EXIT
+-HTMFORM
+-*__________________________HTML FILE INCLUDED___________________________________
+-HTMLFORM BEGIN
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+  var gc_RpcType = "!IBI.GLB.RPCTYPE;";
+  var sHomePath = "!IBI.GLB.HOMEPATH;";
+</script>
+</head>
+    <body>
+   !IBI.FIL.index2.html;
+</body>
+</html>
+-HTMLFORM END
+-*_____________________________________Insert__________________________________
+-*____________________THIS IS FOR GETTING THE LAST ID AND +1___________________________________
+-ADD_RECORD
+TABLE FILE NEWS 
+SUM MAX.ID
+ON TABLE SAVE
+END
+-RUN
+-READ SAVE, &MAX_ID.I9.
+-RUN
+-SET &MAX_ID = &MAX_ID + 1;
+-RUN 
+SQL
+INSERT INTO NEWS (ID,NEWS_TITLE, NEWS, COUNTRY, NEWS_DATE, NEWS_TYPE, NEWS_IMAGE)
+VALUES (&MAX_ID.EVAL, '&NEWS_TITLE.EVAL', '&NEWS.EVAL', '&COUNTRY.EVAL', '&NEWS_DATE.EVAL', '&NEWS_TYPE.EVAL', '&NEWS_IMAGE.EVAL');
+-RUN
+-GOTO FILE_END;
+
+-*______________________________________________DELETE__________________________________________
+
+-DELETERECORD
+-TYPE ++ &ID
+MODIFY FILE NEWS
+ FREEFORM ID
+ MATCH ID
+ ON MATCH DELETE
+ ON NOMATCH GOTO TOP
+ DATA 
+ &ID.EVAL
+END
+-RUN
+-QUIT
+-GOTO FILE_END;
+
+-*____________________________________EDIT___________________________________________
+-EDITRECORD
+TABLE FILE NEWS
+ PRINT ID NEWS_TITLE NEWS COUNTRY NEWS_DATE NEWS_TYPE NEWS_IMAGE
+ WHERE ID EQ &ID.EVAL
+ ON TABLE HOLD AS EDIT_TABLE FORMAT ALPHA
+END
+-RUN
+-SET &ID = ;
+-SET &NEWS_TITLE = ;
+-SET &NEWS = ;
+-SET &COUNTRY = ;
+-SET &NEWS_DATE= ;
+-SET &NEWS_TYPE= ;
+-SET &NEWS_IMAGE = ;
+-READFILE EDIT_TABLE
+-DEFAULT &ID  = ;
+-DEFAULT &NEWS_TITLE  ='';
+-DEFAULT &NEWS='';
+-DEFAULT &COUNTRY ='';
+-DEFAULT &NEWS_DATE  ='';
+-DEFAULT &NEWS_TYPE  ='';
+-DEFAULT &NEWS_IMAGE  ='';
+-RUN
+-CLOSE EDIT_TABLE
+-*______________________________________modal for edit____________________________________________
+-HTMLFORM BEGIN
+ <div class="modal-header">
+    <h4 class="modal-title">Edit this record:</h4>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<!-- Modal body -->
+<div class="modal-body">
+    <form>
+     <input type="hidden" id="ID" value="!IBI.AMP.ID;" />
+        <strong>News title:</strong><br>
+        <textarea rows="1" cols="120" id="NT" class="mt-3" style="width: 100%;">!IBI.AMP.NEWS_TITLE;</textarea><br><br> 
+        <strong>News:</strong><br>
+        <textarea rows="6" cols="200" id="N" class="mt-3" style="width: 100%;">!IBI.AMP.NEWS;</textarea><br><br>
+        <strong>Country:</strong><br>
+        <input type="text" id="C" value="!IBI.AMP.COUNTRY;" class="mt-3" style="width: 100%;" /><br><br>
+        <strong>News date:</strong><br>
+        <input type="text" id="ND" value="!IBI.AMP.NEWS_DATE;" class="mt-3" style="width: 100%;" /><br><br>  
+        <strong>News type:</strong><br>
+        <input type="text" id="NT2" value="!IBI.AMP.NEWS_TYPE;" class="mt-3" style="width: 100%;" /><br><br>
+        <strong>News image:</strong><br>
+        <input type="text" id="NI" value="!IBI.AMP.NEWS_IMAGE;" class="mt-3" style="width: 100%;" /><br>
+        <span id="edit_record" onclick="EDIT();" class="mt-4 btn" style="cursor: pointer; background-color: green; color: white; font-weight: bold; padding: 8px;">Update</span><br>
+    </form>
+</div>
+<!-- Modal footer -->
+<div class="modal-footer">
+    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+</div>
+-HTMLFORM END
+-GOTO FILE_END;
+-*_________________________________Edit_________________________________________
+-EDIT_RECORD
+MODIFY FILE NEWS
+ FREEFORM ID NEWS_TITLE NEWS COUNTRY NEWS_DATE NEWS_TYPE NEWS_IMAGE
+ MATCH ID
+ ON MATCH UPDATE NEWS_TITLE NEWS COUNTRY NEWS_DATE NEWS_TYPE NEWS_IMAGE
+ ON NOMATCH GOTO TOP
+ DATA 
+ '&ID.EVAL' , '&NEWS_TITLE.EVAL','&NEWS.EVAL','&COUNTRY.EVAL','&NEWS_DATE.EVAL','&NEWS_TYPE.EVAL', '&NEWS_IMAGE.EVAL',$
+END
+-RUN
+-FILE_END
+

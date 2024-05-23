@@ -1,0 +1,5 @@
+FILENAME=ADMIN, SUFFIX=SQLMSS                                          
+SEGNAME=ADMIN,  SEGTYPE=S0                                                    
+ FIELDNAME=ID,       ALIAS=ID,     USAGE=I9, ACTUAL = I4,   MISSING=ON,     $                      
+ FIELDNAME=USERNAME,    ALIAS=USERNAME,      USAGE=A50,  ACTUAL = A50,    $                         
+ FIELDNAME=PASSWORD,   ALIAS=PASSWORD,      USAGE=A50, ACTUAL = A50,     $  

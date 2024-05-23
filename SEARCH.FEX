@@ -1,0 +1,56 @@
+-DEFAULT &SEARCH_VAL = '';
+-DEFAULT &MESSAGES = '';
+-SET &MSG = 'No results found!';
+-HO_ME
+-*________________THIS IS FOR IMAGES ADDRESS____________________________________________
+-SET &IMAGE_PATH=&&FRPCUST || '\' || &&CLIENT || '\MEHRABAN\';
+DEFINE FILE NEWS
+IMAGE/A500 = '&IMAGE_PATH.EVAL' | NEWS_IMAGE;
+END
+TABLE FILE NEWS
+PRINT NEWS_DATE AS Date IMAGE AS Image NEWS_TITLE AS Title NEWS AS Description 
+WHERE NEWS_TITLE CONTAINS '&SEARCH_VAL' OR NEWS CONTAINS '&SEARCH_VAL' OR COUNTRY CONTAINS '&SEARCH_VAL'
+BY HIGHEST NEWS_DATE NOPRINT BY NEWS_TITLE NOPRINT 
+ON NEWS_DATE SUBHEAD
+"  "
+"  "
+ON NEWS_DATE SUBFOOT 
+"       "
+"        "
+ON NEWS_TITLE SUBFOOT
+"   "
+"  "
+ON TABLE HOLD AS SEARCH_TABLE FORMAT HTMTABLE
+ON TABLE SET HTMLCSS ON
+ON TABLE SET STYLE *
+TOPMARGIN=0, BOTTOMMARGIN=.5, LEFTMARGIN=1, RIGHTMARGIN=1,$
+TYPE=DATA,COLUMN=IMAGE, IMAGE=(IMAGE),$
+TYPE=REPORT,GRID=OFF,SIZE=14, SQUEEZE=ON,JUSTIFY=LEFT, COLOR=BLACK,$
+TYPE=TITLE, SIZE=18, STYLE=-UNDERLINE+BOLD,$
+ENDSTYLE
+END
+-RUN
+-*__________THIS IS TO CHECK IF SEARCH RESULT EXISTS OR NOT______________________________
+-SET &TOTAL=&LINES+0; 
+-IF &TOTAL EQ 0 THEN  GOTO  HO_ME2;
+-*____________________________HTML FILE INCLUDED_______________________________________
+-HTMLFORM BEGIN
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+  var gc_RpcType = "!IBI.GLB.RPCTYPE;";
+  var sHomePath = "!IBI.GLB.HOMEPATH;";
+</script>
+</head>
+    <body>
+   !IBI.FIL.search.html; 
+</body>
+</html>
+-HTMLFORM END
+-EXIT
+-*_________________________FOR NO RESULT____________________________________
+-HO_ME2
+-HTMLFORM BEGIN
+!IBI.AMP.MSG;
+-HTMLFORM END

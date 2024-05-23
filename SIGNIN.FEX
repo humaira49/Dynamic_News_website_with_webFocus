@@ -1,0 +1,34 @@
+-DEFAULT &TAG = 'HOME';
+-GOTO &TAG;
+-HOME
+-*________________________________html file included______________________________
+-HTMLFORM BEGIN
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+  var gc_RpcType = "!IBI.GLB.RPCTYPE;";
+  var sHomePath = "!IBI.GLB.HOMEPATH;";
+</script>
+</head>
+    <body>
+   !IBI.FIL.signin.html; 
+</body>
+</html>
+-HTMLFORM END
+
+-*_______________________________________________for validation______________________________
+-VALIDATE 
+TABLE FILE ADMIN 
+PRINT USERNAME PASSWORD
+WHERE USERNAME EQ '&USERNAME' 
+WHERE PASSWORD EQ '&PASSWORD' 
+END
+-SET &TOTAL=&LINES+0; 
+-IF &TOTAL GT 0 THEN  GOTO  HOME2;
+-GOTO EXIT
+-HOME2
+-HTMLFORM BEGIN
+!IBI.AMP.USERNAME;
+!IBI.AMP.PASSWORD;
+-HTMLFORM END

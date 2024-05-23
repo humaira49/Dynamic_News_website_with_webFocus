@@ -1,0 +1,9 @@
+FILENAME=NEWS, SUFFIX=SQLMSS, $                                          
+SEGNAME=NEWS,  SEGTYPE=S0        ,$                                            
+ FIELDNAME=ID,       ALIAS=ID,     USAGE=I9, ACTUAL = I4,   MISSING=OFF,     $                      
+ FIELDNAME=NEWS_TITLE,    ALIAS=NEWS_TITLE,      USAGE=A255,  ACTUAL = A255,    $                         
+ FIELDNAME=NEWS,   ALIAS=NEWS,      USAGE=A1000, ACTUAL = A1000,     $  
+  FIELDNAME=COUNTRY,    ALIAS=COUNTRY,      USAGE=A100,  ACTUAL = A100,    $                         
+ FIELDNAME=NEWS_DATE,   ALIAS=NEWS_DATE,      USAGE=YYMD, ACTUAL = DATE,     $  
+  FIELDNAME=NEWS_TYPE,    ALIAS=NEWS_TYPE,      USAGE=A1,  ACTUAL = A1,    $                         
+ FIELDNAME=NEWS_IMAGE,   ALIAS=NEWS_IMAGE,      USAGE=A255, ACTUAL = A255,     $  
